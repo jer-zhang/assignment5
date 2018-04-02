@@ -14,9 +14,11 @@ import java.util.concurrent.TimeUnit;
 
 import assignment5.Critter.CritterShape;
 import javafx.animation.AnimationTimer;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -450,6 +452,7 @@ public class Main extends Application {
         animateButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
+				Timeline timeline = new Timeline();
 				if (animateButton.isSelected()) {
 					stepButton.setDisable(true);
 					step1Button.setDisable(true);
@@ -458,37 +461,40 @@ public class Main extends Application {
 					makeButton.setDisable(true);
 					seedButton.setDisable(true);
 					resetButton.setDisable(true);
+					
 					int frames = animateCount.getValue() / (int) animateSlider.getValue();
 					int modSteps = animateCount.getValue() % (int) animateSlider.getValue();
-					
-					Timeline animate = new Timeline();
-					animate.setCycleCount(1);
-					
-					int stepsRemaining = animateCount.getValue();
-					for (int i = 0; i < frames; i++) {
-						for (int steps = 0; steps < (int) animateSlider.getValue(); steps++) {
-							Critter.worldTimeStep();
-							stepsRemaining--;
-						}
-						Critter.displayWorld(viewPane);
-						animateCount.getEditor().setText(Integer.toString(stepsRemaining));
-						
-						EventHandler<ActionEvent> frameEvent = new EventHandler<ActionEvent>() {
-							@Override
-							public void handle(ActionEvent event) {
+										
+					timeline.getKeyFrames().add(new KeyFrame(Duration.millis(250), new EventHandler<ActionEvent>() {
+						@Override
+						public void handle(ActionEvent arg0) {
+							if (!animateButton.isSelected()) {
+								
 							}
-						};
-						
-						animate.getKeyFrames().add(new KeyFrame(Duration.millis(50), frameEvent));
-					}
+							for (int steps = 0; steps < (int) animateSlider.getValue(); steps++) {
+								Critter.worldTimeStep();
+							}
+							Critter.displayWorld(viewPane);
+							animateCount.getValueFactory().setValue(animateCount.getValue() - (int) animateSlider.getValue());
+							animateCount.getEditor().setText(Integer.toString(animateValFac.getValue()));
+							Main.displayStats(critterStringList, checkListMap);
+						}
+					}));
+					
+					timeline.setCycleCount(frames);
+					timeline.playFromStart();
+					
 					for (int i = 0; i < modSteps; i++) {
 						Critter.worldTimeStep();
 					}
 					Critter.displayWorld(viewPane);
+//					animateButton.setSelected(false);
+
+				} else {
 					animateCount.getEditor().setText("0");
 					animateValFac.setValue(0);
 					
-					animate.playFromStart();
+					timeline.stop();
 					
 					stepButton.setDisable(false);
 					step1Button.setDisable(false);
@@ -497,7 +503,6 @@ public class Main extends Application {
 					makeButton.setDisable(false);
 					seedButton.setDisable(false);
 					resetButton.setDisable(false);
-					animateButton.setSelected(false);
 				}
 			}
         });
@@ -518,7 +523,7 @@ public class Main extends Application {
         textFieldBox.getChildren().add(makeComboBox);
 //        textFieldBox.getChildren().add(makeTextFieldCritter);
         controlPane.getChildren().add(textFieldBox);
-        
+                
         stepBox = new HBox();
         stepBox.getChildren().addAll(stepButton, stepCount);
         stepBox.setSpacing(SPACING);
