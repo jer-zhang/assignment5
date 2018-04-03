@@ -1,4 +1,15 @@
 package assignment5;
+/* CRITTERS Main.java
+ * EE422C Project 5 submission by
+ * Jerry Zhang
+ * jz9954
+ * 15465
+ * Celine Lillie
+ * Cml3665
+ * 15460
+ * Slip days used: 0
+ * Spring 2018
+ */
 
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -49,6 +60,11 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
 
+/**
+ * This class holds the GUI of the Critter World
+ * @author Jerry Zhang, Celine Lillie
+ *
+ */
 public class Main extends Application {
 		
 	private static String myPackage;
@@ -56,16 +72,19 @@ public class Main extends Application {
     static {
         myPackage = Critter.class.getPackage().toString().split(" ")[1];
     }
-    private final int MAXVAL = 1000;
-    private final int MINVAL = 1;
-    private final int SPACING = 5;
-    private final int SMALLBUTTONWIDTH = 75;
-    private final int LARGEBUTTONWIDTH = 2*SMALLBUTTONWIDTH + SPACING;
-    private final int TEXTFIELDWIDTH = 3*SMALLBUTTONWIDTH + 2*SPACING;
     
-	private BorderPane pane;
-	private VBox controlPane;
-	private GridPane viewPane;
+    // Declare constants
+    private final int MAXVAL = 1000;		// Maximum value in spinner
+    private final int MINVAL = 1;			// Minimum value in spinner
+    private final int SPACING = 5;			// Spacing between boxes on panes
+    private final int SMALLBUTTONWIDTH = 75;// Width of a small button
+    private final int LARGEBUTTONWIDTH = 2*SMALLBUTTONWIDTH + SPACING;	// Width of a large button
+    private final int TEXTFIELDWIDTH = 3*SMALLBUTTONWIDTH + 2*SPACING;	// Width of a text field
+    
+    // Declare variables
+	private BorderPane pane;		// Main layout pane
+	private VBox controlPane;		// Left side, holds buttons and other controls
+	private GridPane viewPane;		// Center side, holds grid
 	private HBox makeBox;
 	private HBox textFieldBox;
 	private HBox stepBox;
@@ -77,7 +96,6 @@ public class Main extends Application {
 	private static VBox statsBox;
 	private HBox resetBox;
 	private HBox quitBox;
-	private GraphicsContext gc;
 	private int width;
 	private int height;
 	private ArrayList<String> critterStringList;
@@ -85,66 +103,74 @@ public class Main extends Application {
 		launch(args);
 	}
 	
+	/**
+	 * Starts GUI
+	 * @param stage
+	 */
 	@Override
 	public void start(Stage stage) throws Exception {
-		stage.setTitle("Critters");
-		pane = new BorderPane();
-		controlPane = new VBox();
-		viewPane = new GridPane();
+		stage.setTitle("Critters");					// Title of our window
+		pane = new BorderPane();					// Create new BorderPane for Main GUI layout
+		controlPane = new VBox();					// Create a new VBox for controls
+		viewPane = new GridPane();					// Create new GridPane for critter grid
 		
-        Scene scn = new Scene(pane);
+        Scene scn = new Scene(pane);				// Create new scene including Main Gui layout
 	    
-		Canvas canvas = new Canvas(width, height);
-	    pane.setTop(canvas);
-	    gc = canvas.getGraphicsContext2D();
+		Canvas canvas = new Canvas(width, height);	// Create new canvas of width/height
+	    pane.setTop(canvas);						// Set top of BorderPane with canvas
 	    
-	    Text t = new Text();
+	    // Create new black text and font. Set font to text
+	    Text t = new Text();						
         t.setText("CRITTERS BATTLEGROUNDS");
         t.setFill(Color.BLACK);
         Font f = new Font(40);
         t.setFont(f);
         
-        File assignment5 = new File("C:\\Users\\Jerry Zhang\\eclipse-workspace\\assignment5\\src\\assignment5");
-        String[] classList = assignment5.list();
-        ArrayList<Class<?>> critterClassList = new ArrayList<Class<?>>();
+        // Creates a list of all Critter files in selected path
+        File assignment5 = new File("C:\\Users\\Xedotic\\Documents\\GitHub\\assignment5\\src\\assignment5");
+        String[] classList = assignment5.list();									// List of files in selected path
+        ArrayList<Class<?>> critterClassList = new ArrayList<Class<?>>();			// Create new ArrayList to hold Critter classes
         for (String s : classList) {
-        	String className = s.substring(0, s.length()-5);
+        	String className = s.substring(0, s.length()-5);						// Create string of className, removing .java
         	try {
-			Class<?> c = Class.forName(myPackage + "." + className);
-			Class<?> critterClass = Class.forName(myPackage + ".Critter");
-        	if ((critterClass.isAssignableFrom(c)) && (!critterClass.equals(c))) {
-        		critterClassList.add(c);
-        	}
+				Class<?> c = Class.forName(myPackage + "." + className);			// Reflections, get class of files
+				Class<?> critterClass = Class.forName(myPackage + ".Critter");		// Compare to Critter file
+	        	if ((critterClass.isAssignableFrom(c)) && (!critterClass.equals(c))) {	// If class superclass is Critter, add to list
+	        		critterClassList.add(c);
+	        	}
         	} catch (Exception e) {
+        		// Do Nothing
         	}
         }
         
-        critterStringList = new ArrayList<String>();
-        for (Class<?> c : critterClassList) {
+        critterStringList = new ArrayList<String>();		// Create a new ArrayList to hold strings of critters
+        for (Class<?> c : critterClassList) {				// For each Class in critterClassList, make string and add to string list
         	String critString = c.toString().substring(18);
         	critterStringList.add(critString);
         }
 
-    	Map<String, Boolean> checkListMap = new HashMap<String, Boolean>();
+        // Create a map of String and Boolean that holds values if runStats checkbox is checked
+    	Map<String, Boolean> checkListMap = new HashMap<String, Boolean>();	
     	for (String crit : critterStringList) {
         	checkListMap.put(crit, false);
     	}
         
-// MAKE STUFF
-        SpinnerValueFactory<Integer> makeValFac = new SpinnerValueFactory.IntegerSpinnerValueFactory(MINVAL, MAXVAL);
+// MAKE    	
+    	// Make SpinnerValueFactory (Value in the spinner), if entered value > max or < min then reset to previous valid value
+        SpinnerValueFactory<Integer> makeValFac = new SpinnerValueFactory.IntegerSpinnerValueFactory(MINVAL, MAXVAL);	// Create new make SpinnerValueFactory
         makeValFac.setConverter(new StringConverter<Integer>() {
 			@Override
 			public Integer fromString(String arg0) {
-				int temp = makeValFac.getValue();
+				int temp = makeValFac.getValue();				// Old value in spinner
 				try {
-					Integer newVal = Integer.parseInt(arg0);
+					Integer newVal = Integer.parseInt(arg0);	// New value entered
 					if ((newVal <= MAXVAL) && (newVal >= MINVAL)) {
-						return Integer.parseInt(arg0);
+						return Integer.parseInt(arg0);			// return new value if int within min/max range
 					} else {
-						return temp;
+						return temp;							// return old value
 					}
 				} catch (NumberFormatException e) {
-					return temp;
+					return temp;								// Invalid input, return old value
 				}
 			}
 
@@ -154,64 +180,64 @@ public class Main extends Application {
 			}     	
         });
         
-        Spinner<Integer> makeCount = new Spinner<Integer>();
-        makeCount.setMaxWidth(SMALLBUTTONWIDTH);
-        makeCount.setValueFactory(makeValFac);
-        makeCount.setEditable(true);
+        // Make Spinner
+        Spinner<Integer> makeCount = new Spinner<Integer>();	// Create a new make Spinner
+        makeCount.setMaxWidth(SMALLBUTTONWIDTH);				// Set width to SMALLBUTTONWIDTH
+        makeCount.setValueFactory(makeValFac);					// Set Spinner's value factory to above
+        makeCount.setEditable(true);							// Enable edit
+		// Convert string in spinner to int and set value and text
         makeCount.getEditor().setOnAction(action -> {
         	String text = makeCount.getEditor().getText();
         	int value = makeValFac.getConverter().fromString(text);
         	makeValFac.setValue(value);
         	makeCount.getEditor().setText(String.valueOf(value));
         });
-        TextField makeTextFieldCritter = new TextField();
-        makeTextFieldCritter.setMinWidth(TEXTFIELDWIDTH);
-        makeTextFieldCritter.setPromptText("Enter Valid Critter Name");
 
-
+        // Make ComboBox
         ComboBox<String> makeComboBox = new ComboBox<String>();
-        for (Class c : critterClassList) {
+        for (Class<?> c : critterClassList) {					// Each Critter class gets added to ComboBox
         	String critString = c.toString().substring(18);
         	makeComboBox.getItems().add(critString);	
         }
-        makeComboBox.setMinWidth(TEXTFIELDWIDTH);
-        if (!critterClassList.isEmpty()) {
+        makeComboBox.setMinWidth(TEXTFIELDWIDTH);				// Set width
+        if (!critterClassList.isEmpty()) {						// If critterClassList is not empty, set value to critter string
         	makeComboBox.setValue(critterClassList.get(0).toString().substring(18));
         }
-        Button makeButton = new Button();
-        makeButton.setMinWidth(LARGEBUTTONWIDTH);
-        makeButton.setText("Make");
+        Button makeButton = new Button();						// Create a new make button
+        makeButton.setMinWidth(LARGEBUTTONWIDTH);				// Set width
+        makeButton.setText("Make");								// Set text
         makeButton.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
         		try {
-        			String critName = makeComboBox.getValue();
+        			String critName = makeComboBox.getValue();	// Temp string of Critter
         			for (int i = 0; i < makeCount.getValue(); i++) {
-        				Critter.makeCritter(critName);
+        				Critter.makeCritter(critName);			// Create makeCount of temp critters
         			}
-        	        Critter.displayWorld(viewPane);
-        	        Main.displayStats(critterStringList, checkListMap);
-        		} catch (Exception ex) {
+        	        Critter.displayWorld(viewPane);				// Update world
+        	        Main.displayStats(critterStringList, checkListMap);	// Update stats
+        		} catch (Exception ex) {						// Display error if invalid Critter
         			System.out.println("Error! Invalid Input.");
         		}
         	}
         });
 
-// STEP STUFF
+// STEP
+        // Step SpinnerValueFactory (Value in the spinner), if entered value > max or < min then reset to previous valid value
         SpinnerValueFactory<Integer> stepValFac = new SpinnerValueFactory.IntegerSpinnerValueFactory(MINVAL, MAXVAL);
-        stepValFac.setConverter(new StringConverter<Integer>() {
+        stepValFac.setConverter(new StringConverter<Integer>() {	// Create new step SpinnerValueFactory
 			@Override
 			public Integer fromString(String arg0) {
-				int temp = stepValFac.getValue();
+				int temp = stepValFac.getValue();			// Old value in spinner
 				try {
-					Integer newVal = Integer.parseInt(arg0);
+					Integer newVal = Integer.parseInt(arg0);// New value entered
 					if ((newVal <= MAXVAL) && (newVal >= MINVAL)) {
-						return Integer.parseInt(arg0);
+						return Integer.parseInt(arg0);		// return new value if int within min/max range
 					} else {
-						return temp;
+						return temp;						// return old value
 					}
 				} catch (NumberFormatException e) {
-					return temp;
+					return temp;							// Invalid input, return old value
 				}
 			}
 
@@ -221,101 +247,104 @@ public class Main extends Application {
 			}     	
         });
         
-        Spinner<Integer> stepCount = new Spinner<Integer>();
-        stepCount.setMaxWidth(SMALLBUTTONWIDTH);
-        stepCount.setValueFactory(stepValFac);
-        stepCount.setEditable(true);
+        Spinner<Integer> stepCount = new Spinner<Integer>();// Create a new step Spinner
+        stepCount.setMaxWidth(SMALLBUTTONWIDTH);			// Set width to SMALLBUTTONWIDTH
+        stepCount.setValueFactory(stepValFac);				// Set Spinner's value factory to above
+        stepCount.setEditable(true);						// Enable edit
+        // Convert string in spinner to int and set value and text
         stepCount.getEditor().setOnAction(action -> {
         	String text = stepCount.getEditor().getText();
-        	int value = makeValFac.getConverter().fromString(text);
-        	makeValFac.setValue(value);
+        	int value = stepValFac.getConverter().fromString(text);
+        	stepValFac.setValue(value);
         	stepCount.getEditor().setText(String.valueOf(value));
         });
-        Button stepButton = new Button();
-        stepButton.setMinWidth(LARGEBUTTONWIDTH);
-        stepButton.setText("Step");
+        
+        Button stepButton = new Button();				// Create a new step button
+        stepButton.setMinWidth(LARGEBUTTONWIDTH);		// Set width
+        stepButton.setText("Step");						// Set text
         stepButton.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
         		try {
         			for (int i = 0; i < stepCount.getValue(); i++) {
-        				Critter.worldTimeStep();
+        				Critter.worldTimeStep();		// Do worldTimeStep stepCount number of times
         			}
-        	        Critter.displayWorld(viewPane);
-        	        Main.displayStats(critterStringList, checkListMap);
+        	        Critter.displayWorld(viewPane);		// Update world
+        	        Main.displayStats(critterStringList, checkListMap); // Update stats
         		} catch (Exception ex){
-        			System.out.println("Error! Invalid Input.");
+        			System.out.println("Error! Invalid Input.");// Display error if invalid Step
         		}
         	}
         });
         
-        Button step1Button = new Button();
-        step1Button.setMinWidth(SMALLBUTTONWIDTH);
-        step1Button.setText("Step 1");
+        Button step1Button = new Button();				// Create a new step 1 button
+        step1Button.setMinWidth(SMALLBUTTONWIDTH);		// Set width
+        step1Button.setText("Step 1");					// Set text
         step1Button.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
         		try {
-    				Critter.worldTimeStep();
-    		        Critter.displayWorld(viewPane);
-        	        Main.displayStats(critterStringList, checkListMap);
+    				Critter.worldTimeStep();			// Do worldTimeStep 1 time
+    		        Critter.displayWorld(viewPane);		// Update world
+        	        Main.displayStats(critterStringList, checkListMap);// Update stats
         		} catch (Exception ex){
-        			System.out.println("Error! Invalid Input.");
+        			System.out.println("Error! Invalid Input.");// Display error if invalid Step
         		}
         	}
         });
         
-        Button step100Button = new Button();
-        step100Button.setMinWidth(SMALLBUTTONWIDTH);
-        step100Button.setText("Step 100");
+        Button step100Button = new Button();			// Create a new step 100 button
+        step100Button.setMinWidth(SMALLBUTTONWIDTH);	// Set width
+        step100Button.setText("Step 100");				// Set text
         step100Button.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
         		try {
-        			for (int i = 0; i < 100; i++) {
+        			for (int i = 0; i < 100; i++) {		// Do worldTimeStep 100 time
         				Critter.worldTimeStep();
         			}
-        	        Critter.displayWorld(viewPane);
-        	        Main.displayStats(critterStringList, checkListMap);
+        	        Critter.displayWorld(viewPane);		// Update world
+        	        Main.displayStats(critterStringList, checkListMap);// Update stats
         		} catch (Exception ex){
-        			System.out.println("Error! Invalid Input.");
+        			System.out.println("Error! Invalid Input.");// Display error if invalid Step
         		}
         	}
         });
         
-        Button step1000Button = new Button();
-        step1000Button.setMinWidth(SMALLBUTTONWIDTH);
-        step1000Button.setText("Step 1000");
+        Button step1000Button = new Button();			// Create a new step 1000 button
+        step1000Button.setMinWidth(SMALLBUTTONWIDTH);	// Set width
+        step1000Button.setText("Step 1000");			// Set text
         step1000Button.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
         		try {
-        			for (int i = 0; i < 1000; i++) {
+        			for (int i = 0; i < 1000; i++) {	// Do worldTimeStep 1000 time
         				Critter.worldTimeStep();        				
         			}
-        			Critter.displayWorld(viewPane);
-        	        Main.displayStats(critterStringList, checkListMap);
+        			Critter.displayWorld(viewPane);		// Update world
+        	        Main.displayStats(critterStringList, checkListMap);	// Update stats
         		} catch (Exception ex){
-        			System.out.println("Error! Invalid Input.");
+        			System.out.println("Error! Invalid Input.");// Display error if invalid Step
         		}
         	}
         });
         
-// SEED STUFF
+// SEED
+        // Seed SpinnerValueFactory (Value in the spinner), if entered value > max or < min then reset to previous valid value
         SpinnerValueFactory<Integer> seedValFac = new SpinnerValueFactory.IntegerSpinnerValueFactory(MINVAL, MAXVAL);
-        seedValFac.setConverter(new StringConverter<Integer>() {
+        seedValFac.setConverter(new StringConverter<Integer>() {	// Create new seed SpinnerValueFactory
 			@Override
 			public Integer fromString(String arg0) {
-				int temp = seedValFac.getValue();
+				int temp = seedValFac.getValue();				// Old value in spinner
 				try {
-					Integer newVal = Integer.parseInt(arg0);
+					Integer newVal = Integer.parseInt(arg0);	// New value entered
 					if ((newVal <= MAXVAL) && (newVal >= MINVAL)) {
-						return Integer.parseInt(arg0);
+						return Integer.parseInt(arg0);			// return new value if int within min/max range
 					} else {
-						return temp;
+						return temp;							// return old value
 					}
 				} catch (NumberFormatException e) {
-					return temp;
+					return temp;								// Invalid input, return old value
 				}
 			}
 
@@ -325,10 +354,11 @@ public class Main extends Application {
 			}     	
         });
         
-        Spinner<Integer> seedCount = new Spinner<Integer>();
-        seedCount.setMaxWidth(SMALLBUTTONWIDTH);
-        seedCount.setValueFactory(seedValFac);
-        seedCount.setEditable(true);
+        Spinner<Integer> seedCount = new Spinner<Integer>();	// Create a new step Spinner
+        seedCount.setMaxWidth(SMALLBUTTONWIDTH);				// Set width to SMALLBUTTONWIDTH
+        seedCount.setValueFactory(seedValFac);					// Set Spinner's value factory to above
+        seedCount.setEditable(true);							// Enable edit
+        // Convert string in spinner to int and set value and text
         seedCount.getEditor().setOnAction(action -> {
         	String text = seedCount.getEditor().getText();
         	int value = seedValFac.getConverter().fromString(text);
@@ -336,33 +366,35 @@ public class Main extends Application {
         	seedCount.getEditor().setText(String.valueOf(value));
         });
         
-        Button seedButton = new Button();
-        seedButton.setMinWidth(LARGEBUTTONWIDTH);
-        seedButton.setText("Seed");
+        Button seedButton = new Button();				// Create a new seed button
+        seedButton.setMinWidth(LARGEBUTTONWIDTH);		// Set width
+        seedButton.setText("Seed");						// Set text
         seedButton.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
         		try {
-        			Critter.setSeed(seedCount.getValue());
+        			Critter.setSeed(seedCount.getValue());	// Set seed
         		} catch (Exception ex){
-        			System.out.println("Error! Invalid Input.");
+        			System.out.println("Error! Invalid Input.");// Display error if invalid seed
         		}
         	}
         });
         
-        runStatsBox = new VBox();
+        runStatsBox = new VBox();		// Create 2 new VBoxs for stats
         statsBox = new VBox();
-        Text runStatsTitle = new Text("Display Stats For:");
+        Text runStatsTitle = new Text("Display Stats For:");	// Create text to add to a VBox
         runStatsTitle.setFont(new Font(20));
         runStatsBox.getChildren().add(runStatsTitle);
-        for (String c : critterStringList) {
+        for (String c : critterStringList) {					// Add a blank space for each critter present in StringList
         	Text temp = new Text("");
         	statsBox.getChildren().add(temp);
         }
 
+        // For each critter in array
         for (String c : critterStringList) {
-        	CheckBox cb = new CheckBox(c);
-        	cb.setText(c);
+        	CheckBox cb = new CheckBox(c);		// Create a new checkbox
+        	cb.setText(c);						// Set text to string
+        	// If checkbox is selected, change checkListMap to true, else false.
         	cb.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
@@ -371,15 +403,16 @@ public class Main extends Application {
 					} else {
 						checkListMap.replace(c, false);
 					}
-					Main.displayStats(critterStringList, checkListMap);
+					Main.displayStats(critterStringList, checkListMap);		// Display stats based on checkListMap values
 				}
         	});
-        	runStatsBox.getChildren().add(cb);
+        	runStatsBox.getChildren().add(cb);	// Add checkbox to VBox
         }
         
-        Button resetButton = new Button();
-        resetButton.setMinWidth(TEXTFIELDWIDTH);
-        resetButton.setText("Reset World");
+        Button resetButton = new Button();			// Create a new reset button
+        resetButton.setMinWidth(TEXTFIELDWIDTH);	// Set width
+        resetButton.setText("Reset World");			// Set text
+        // Clear world
         resetButton.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
@@ -389,33 +422,32 @@ public class Main extends Application {
         	}
         });
         
-        Button quitButton = new Button();
-        quitButton.setMinWidth(TEXTFIELDWIDTH);
-        quitButton.setText("Quit");
-//      quitButton.setBackground(new Background(new BackgroundFill(Color.INDIANRED, CornerRadii.EMPTY, Insets.EMPTY)));
+        Button quitButton = new Button();			// Create a new reset button
+        quitButton.setMinWidth(TEXTFIELDWIDTH);		// Set width
+        quitButton.setText("Quit");					// Set text
         quitButton.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
-        		System.exit(0);
+        		System.exit(0);						// Exit program
         	}
         });
         
-// ANIMATE BUTTON   
-        
+// ANIMATE 
+        // Animate SpinnerValueFactory (Value in the spinner), if entered value > max or < min then reset to previous valid value
         SpinnerValueFactory<Integer> animateValFac = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, MAXVAL);
-        animateValFac.setConverter(new StringConverter<Integer>() {
+        animateValFac.setConverter(new StringConverter<Integer>() {	// Create new seed SpinnerValueFactory
 			@Override
 			public Integer fromString(String arg0) {
-				int temp = animateValFac.getValue();
+				int temp = animateValFac.getValue();		// Old value in spinner
 				try {
-					Integer newVal = Integer.parseInt(arg0);
+					Integer newVal = Integer.parseInt(arg0);// New value entered
 					if ((newVal <= MAXVAL) && (newVal >= 0)) {
-						return Integer.parseInt(arg0);
+						return Integer.parseInt(arg0);		// return new value if int within min/max range
 					} else {
-						return temp;
+						return temp;						// return old value
 					}
 				} catch (NumberFormatException e) {
-					return temp;
+					return temp;							// Invalid input, return old value
 				}
 			}
 
@@ -425,10 +457,11 @@ public class Main extends Application {
 			}     	
         });
         
-        Spinner<Integer> animateCount = new Spinner<Integer>();
-        animateCount.setMaxWidth(SMALLBUTTONWIDTH);
-        animateCount.setValueFactory(animateValFac);
-        animateCount.setEditable(true);
+        Spinner<Integer> animateCount = new Spinner<Integer>();	// Create a new animate Spinner
+        animateCount.setMaxWidth(SMALLBUTTONWIDTH);				// Set width to SMALLBUTTONWIDTH
+        animateCount.setValueFactory(animateValFac);			// Set Spinner's value factory to above
+        animateCount.setEditable(true);							// Enable edit
+        // Convert string in spinner to int and set value and text
         animateCount.getEditor().setOnAction(action -> {
         	String text = animateCount.getEditor().getText();
         	int value = animateValFac.getConverter().fromString(text);
@@ -436,9 +469,9 @@ public class Main extends Application {
         	animateCount.getEditor().setText(String.valueOf(value));
         });
         
-        Slider animateSlider = new Slider(1, 100, 1);
-        animateSlider.setMinWidth(LARGEBUTTONWIDTH);
-        animateSlider.setShowTickLabels(true);
+        Slider animateSlider = new Slider(1, 100, 1);		// Create a new animate Slider
+        animateSlider.setMinWidth(LARGEBUTTONWIDTH);		// Set width to LARGEBUTTONWIDTH
+        animateSlider.setShowTickLabels(true);				// Set and enable tick marks
         animateSlider.setMinorTickCount(10);
         animateSlider.setMajorTickUnit(49);
         animateSlider.setShowTickMarks(true);
@@ -454,7 +487,9 @@ public class Main extends Application {
         animateButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				Timeline timeline = new Timeline();
+				Timeline timeline = new Timeline();		// Create a new Timeline
+				
+				// If animate button is selected, disable all other buttons
 				if (animateButton.isSelected()) {
 					stepButton.setDisable(true);
 					step1Button.setDisable(true);
@@ -468,29 +503,30 @@ public class Main extends Application {
 					seedCount.setDisable(true);
 					stepCount.setDisable(true);
 					
+					// Calculate number of frames required by desired step count and speed
 					int frames = animateCount.getValue() / (int) animateSlider.getValue();
-					timeline.setCycleCount(frames);
+					timeline.setCycleCount(frames);					// Set cycleCount to frames
 										
 					timeline.getKeyFrames().add(new KeyFrame(Duration.millis(250), new EventHandler<ActionEvent>() {
 						@Override
 						public void handle(ActionEvent arg0) {
 							if (!animateButton.isSelected()) {
-								timeline.stop();
+								timeline.stop();					// If animate button is selected, stop timeline
 							}
 							if (animateCount.getValue() < animateSlider.getValue()) {
-								timeline.stop();
+								timeline.stop();					// If animate count is ever less than slider value, stop timeline, goto handler
 								timeline.getOnFinished().handle(new ActionEvent());
 								return;
 							}
 							for (int steps = 0; steps < (int) animateSlider.getValue(); steps++) {
-								numSteps.set(0, numSteps.get(0) + 1);
+								numSteps.set(0, numSteps.get(0) + 1);	// Step snimatSlider number of times
 								System.out.println(numSteps.get(0));
 								Critter.worldTimeStep();
 							}
-							Critter.displayWorld(viewPane);
-							animateCount.getValueFactory().setValue(animateCount.getValue() - (int) animateSlider.getValue());
-							animateCount.getEditor().setText(Integer.toString(animateValFac.getValue()));
-							Main.displayStats(critterStringList, checkListMap);
+							Critter.displayWorld(viewPane);			// Update World
+							animateCount.getValueFactory().setValue(animateCount.getValue() - (int) animateSlider.getValue()); // Set animate spinner to spinner - slider
+							animateCount.getEditor().setText(Integer.toString(animateValFac.getValue()));	// Set spinner count to steps remaining
+							Main.displayStats(critterStringList, checkListMap);		// Display stats
 						}
 					}));
 					
@@ -499,23 +535,26 @@ public class Main extends Application {
 						public void handle(ActionEvent arg0) {
 							int modSteps = animateCount.getValue() % (int) animateSlider.getValue();
 
+							// If animateCount is ever > modSteps, set the timeline cycle count to the division to update frame count and play
 							if (animateCount.getValue() > modSteps) {
 								timeline.setCycleCount(animateCount.getValue() / (int) animateSlider.getValue());
 								timeline.play();
 							} else {
-								
+								// Step remainder time if animateCount < than slider num
 								for (int i = 0; i < modSteps; i++) {
 									numSteps.set(0, numSteps.get(0) + 1);
 									System.out.println(numSteps.get(0));
 									Critter.worldTimeStep();
-									animateCount.getValueFactory().setValue(animateCount.getValue() - 1);
+									animateCount.getValueFactory().setValue(animateCount.getValue() - 1);	// Set animate spinner to decrease 1
 								}
-								Critter.displayWorld(viewPane);
+								Critter.displayWorld(viewPane);		// Update world
 																
 								numSteps.set(0, 0);
 	//							animateCount.getEditor().setText("0");
 	//							animateValFac.setValue(0);
-															
+								
+								// Enable all buttons
+								
 								stepButton.setDisable(false);
 								step1Button.setDisable(false);
 								step100Button.setDisable(false);
@@ -532,7 +571,8 @@ public class Main extends Application {
 							}
 						}
 					});
-										
+					
+					// If cycleCount is less greater than 0, play the timeline, else, goto getOnGinish handler
 					if(timeline.getCycleCount() > 0) {
 						timeline.play();
 					} else {
@@ -540,8 +580,9 @@ public class Main extends Application {
 					}
 
 				} else {
+					// Stop timeline and enable all buttons
 					timeline.stop();
-					
+
 					stepButton.setDisable(false);
 					step1Button.setDisable(false);
 					step100Button.setDisable(false);
@@ -557,6 +598,8 @@ public class Main extends Application {
 			}
         });
         
+        // Add everything to the controlPane, add spacing
+        // Set slider box and text
         sliderBox = new HBox();
         Text txt = new Text("Speed: ");
         HBox txtBox = new HBox();
@@ -564,58 +607,70 @@ public class Main extends Application {
         txtBox.getChildren().add(txt);
         sliderBox.getChildren().addAll(txtBox, animateSlider);
         
+        // Add make button and spinner
         makeBox = new HBox();
         makeBox.getChildren().addAll(makeButton, makeCount);
         makeBox.setSpacing(SPACING);
         controlPane.getChildren().add(makeBox);
         
+        // Add make ComboBox
         textFieldBox = new HBox();
         textFieldBox.getChildren().add(makeComboBox);
-//        textFieldBox.getChildren().add(makeTextFieldCritter);
         controlPane.getChildren().add(textFieldBox);
-                
+        
+        // Add step button and spinner
         stepBox = new HBox();
         stepBox.getChildren().addAll(stepButton, stepCount);
         stepBox.setSpacing(SPACING);
         controlPane.getChildren().add(stepBox);
         
+        // Add step 1, 100, 1000 button
         stepFixedBox = new HBox();
         stepFixedBox.getChildren().addAll(step1Button, step100Button, step1000Button);
         stepFixedBox.setSpacing(SPACING);
         controlPane.getChildren().add(stepFixedBox);
         
+        // Add seed button and spinner
         seedBox = new HBox();
         seedBox.getChildren().addAll(seedButton, seedCount);
         seedBox.setSpacing(SPACING);
         controlPane.getChildren().add(seedBox);
         
+        // Add animate button and spinner
         animateBox = new HBox();
         animateBox.setSpacing(SPACING);
         animateBox.getChildren().addAll(animateButton, animateCount);
         controlPane.getChildren().add(animateBox);
         
+        // Add slider
         controlPane.getChildren().add(sliderBox);
         
+        // Add runstats
         controlPane.getChildren().add(runStatsBox);
         controlPane.getChildren().add(statsBox);
         
+        // Add reset button
         resetBox = new HBox();
         resetBox.getChildren().add(resetButton);
         resetBox.setSpacing(SPACING);
         controlPane.getChildren().add(resetBox);
         
+        // Add quit button
         quitBox = new HBox();
         quitBox.getChildren().add(quitButton);
         quitBox.setSpacing(SPACING);
         controlPane.getChildren().add(quitBox);
         
+        // Set spacing and width
         controlPane.setSpacing(SPACING);
         controlPane.setMinWidth(TEXTFIELDWIDTH + SPACING);
         
+        // Add controlPane, title, and viewPane to pane (Main BorderPane)
         pane.setLeft(controlPane);
         pane.setTop(t);
         pane.setCenter(viewPane);
         
+        // DisplayWorld, set scene, show
         Critter.displayWorld(viewPane);
         stage.setScene(scn);
         stage.show();
