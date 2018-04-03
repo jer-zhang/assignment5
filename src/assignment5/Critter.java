@@ -11,7 +11,12 @@ import javafx.collections.ObservableListBase;
 import javafx.collections.transformation.SortedList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -26,7 +31,8 @@ import java.util.ArrayList;
 
 public abstract class Critter {
 	
-	private static final int MAXSIZE = 600;
+	private static final int MAXHEIGHT = 600;
+	private static final int MAXWIDTH = 1000;
 	
 	/* NEW FOR PROJECT 5 */
 	public enum CritterShape {
@@ -60,10 +66,15 @@ public abstract class Critter {
 	private static String myPackage;
 	private static ArrayList<Critter> critList = new ArrayList<Critter>();				// Critter set
 	private static List<Critter> babies = new java.util.ArrayList<Critter>();
-
+	
+	private static double maxWidth;
+	private static double maxHeight;
+	
 	// Gets the package name.  This assumes that Critter and its subclasses are all in the same package.
 	static {
 		myPackage = Critter.class.getPackage().toString().split(" ")[1];
+		maxWidth = MAXWIDTH;
+		maxHeight = MAXHEIGHT;
 	}
 	
 	/**
@@ -286,29 +297,45 @@ public abstract class Critter {
 	
 	public static void displayWorld(GridPane pane) {
 		pane.getChildren().clear();
+		int boundingSize;				// Larger world side
+		double sideLength;				// Side of square in grid
+		if (maxHeight/Params.world_height <= maxWidth/Params.world_width) {
+			boundingSize = Params.world_height;
+			sideLength = maxHeight / (double) boundingSize;
+		} else {
+			boundingSize = Params.world_width;
+			sideLength = maxWidth / (double) boundingSize;
+		}
 		for (int row = 0; row < Params.world_height; row++) {
 			for (int col = 0; col < Params.world_width; col++) {
-				Shape square = new Rectangle((double) MAXSIZE/Params.world_height, (double) MAXSIZE/Params.world_height);
+				Shape square = new Rectangle(sideLength - 0.2, sideLength - 0.2);
 				square.setFill(null);
 				square.setStroke(Color.BLACK);
 				square.setStrokeWidth(.1);
 				StackPane gridSquare = new StackPane();
-				gridSquare.setMinSize(MAXSIZE/Params.world_height, MAXSIZE/Params.world_height);
 				gridSquare.getChildren().add(square);
 				pane.add(gridSquare, col, row);
+				pane.setHgap(0);
+				pane.setVgap(0);
 			}
 		}
 		for (Critter c : critList) {
 			Shape critShape = findShape(c.viewShape());
 			
-			critShape.getTransforms().add(new Scale((double) MAXSIZE/(Params.world_height)/2, (double) MAXSIZE/(Params.world_height)/2, 0.5, 0.5));
+			critShape.getTransforms().add(new Scale((double) sideLength/2, (double) sideLength/2, 0.5, 0.5));
 			critShape.setFill(c.viewFillColor());
 			critShape.setStroke(c.viewOutlineColor());
 			critShape.setStrokeWidth(.1);
-			StackPane gridSquare = (StackPane) pane.getChildren().get(Params.world_height*c.y_coord + c.x_coord);
+			StackPane gridSquare = (StackPane) pane.getChildren().get(boundingSize*c.y_coord + c.x_coord);
 			gridSquare.getChildren().add(critShape);
 		}
 	} 
+	
+	
+	public static void updateGridSize(double width, double height) {
+		maxWidth = width;
+		maxHeight = height;
+	}
 	
 	public static Shape findShape(CritterShape shape) {
 		Shape s = null;
@@ -368,6 +395,7 @@ public abstract class Critter {
 		}
 		return s;
 	}
+	
 	/* Alternate displayWorld, where you use Main.<pane> to reach into your
 	   display component.
 	   // public static void displayWorld() {}

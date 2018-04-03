@@ -29,10 +29,13 @@ import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
@@ -46,7 +49,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
@@ -54,11 +59,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
+import javafx.scene.effect.DropShadow;
 
 /**
  * This class holds the GUI of the Critter World
@@ -155,7 +162,17 @@ public class Main extends Application {
         	checkListMap.put(crit, false);
     	}
         
-// MAKE    	
+    	ChangeListener<Number> stageSizeListener = new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				Critter.updateGridSize(stage.getWidth() - 265, stage.getHeight() - 105);
+				Critter.displayWorld(viewPane);
+			}
+    	};
+    	
+    	stage.widthProperty().addListener(stageSizeListener);
+    	stage.heightProperty().addListener(stageSizeListener);
+    	
     	// Make SpinnerValueFactory (Value in the spinner), if entered value > max or < min then reset to previous valid value
         SpinnerValueFactory<Integer> makeValFac = new SpinnerValueFactory.IntegerSpinnerValueFactory(MINVAL, MAXVAL);	// Create new make SpinnerValueFactory
         makeValFac.setConverter(new StringConverter<Integer>() {
@@ -425,6 +442,12 @@ public class Main extends Application {
         Button quitButton = new Button();			// Create a new reset button
         quitButton.setMinWidth(TEXTFIELDWIDTH);		// Set width
         quitButton.setText("Quit");					// Set text
+        Background bg = new Background(new BackgroundFill(Color.color(244./255, 0/255, 0/255), new CornerRadii(2), new Insets(0)));
+        DropShadow ds = new DropShadow();
+        ds.setColor(Color.GREY);
+        quitButton.setEffect(ds);
+        quitButton.setBackground(bg);
+        //quitButton.setBorder(new Border(new BorderStroke()));
         quitButton.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent e) {
@@ -598,6 +621,7 @@ public class Main extends Application {
 			}
         });
         
+        
         // Add everything to the controlPane, add spacing
         // Set slider box and text
         sliderBox = new HBox();
@@ -667,6 +691,7 @@ public class Main extends Application {
         
         // Add controlPane, title, and viewPane to pane (Main BorderPane)
         pane.setLeft(controlPane);
+        BorderPane.setAlignment(t, Pos.CENTER);
         pane.setTop(t);
         pane.setCenter(viewPane);
         
