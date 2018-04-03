@@ -5,7 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableListBase;
+import javafx.collections.transformation.SortedList;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -211,13 +216,16 @@ public abstract class Critter {
 	 */
 	public static void worldTimeStep() {
 		// Calls doTimeStep for all critters
+		
 		for (Critter c : critList) {
 			c.doTimeStep();
 		}
 		
 		// Fight sequence for all critters in set
-		for (Critter c1 : critList) {
-			for (Critter c2 : critList) {
+		for (int i = 0; i < critList.size(); i++) {
+			Critter c1 = critList.get(i);
+			for (int j = i; j < critList.size(); j++) {
+				Critter c2 = critList.get(j);
 				if (c1 != c2) {
 					// If critter is not itself and has the same coords
 					if ((c1.x_coord == c2.x_coord) && (c1.y_coord == c2.y_coord)) {
@@ -275,17 +283,17 @@ public abstract class Critter {
           	critList.add(alga);							// Add to critList
         }
 	}
-
+	
 	public static void displayWorld(GridPane pane) {
 		pane.getChildren().clear();
 		for (int row = 0; row < Params.world_height; row++) {
 			for (int col = 0; col < Params.world_width; col++) {
-				Shape square = new Rectangle((double) MAXSIZE/Params.world_width, (double) MAXSIZE/Params.world_width);
+				Shape square = new Rectangle((double) MAXSIZE/Params.world_height, (double) MAXSIZE/Params.world_height);
 				square.setFill(null);
 				square.setStroke(Color.BLACK);
 				square.setStrokeWidth(.1);
 				StackPane gridSquare = new StackPane();
-				gridSquare.setMinSize(MAXSIZE/Params.world_width, MAXSIZE/Params.world_width);
+				gridSquare.setMinSize(MAXSIZE/Params.world_height, MAXSIZE/Params.world_height);
 				gridSquare.getChildren().add(square);
 				pane.add(gridSquare, col, row);
 			}
@@ -293,14 +301,12 @@ public abstract class Critter {
 		for (Critter c : critList) {
 			Shape critShape = findShape(c.viewShape());
 			
-			critShape.getTransforms().add(new Scale((double) MAXSIZE/(Params.world_width)/2, (double) MAXSIZE/(Params.world_width)/2, 0.5, 0.5));
+			critShape.getTransforms().add(new Scale((double) MAXSIZE/(Params.world_height)/2, (double) MAXSIZE/(Params.world_height)/2, 0.5, 0.5));
 			critShape.setFill(c.viewFillColor());
 			critShape.setStroke(c.viewOutlineColor());
 			critShape.setStrokeWidth(.1);
-			StackPane gridSquare = (StackPane) pane.getChildren().get(Params.world_width*c.y_coord + c.x_coord);
-			
+			StackPane gridSquare = (StackPane) pane.getChildren().get(Params.world_height*c.y_coord + c.x_coord);
 			gridSquare.getChildren().add(critShape);
-//			pane.add(critShape, c.y_coord, c.x_coord);
 		}
 	} 
 	

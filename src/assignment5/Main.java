@@ -445,6 +445,8 @@ public class Main extends Application {
         animateSlider.setBlockIncrement(1);
         animateSlider.setSnapToTicks(true);
         
+        ArrayList<Integer> numSteps = new ArrayList<Integer>();
+        numSteps.add(0);
         
         ToggleButton animateButton = new ToggleButton();
         animateButton.setMinWidth(LARGEBUTTONWIDTH);
@@ -461,17 +463,28 @@ public class Main extends Application {
 					makeButton.setDisable(true);
 					seedButton.setDisable(true);
 					resetButton.setDisable(true);
+					makeCount.setDisable(true);
+					makeComboBox.setDisable(true);
+					seedCount.setDisable(true);
+					stepCount.setDisable(true);
 					
 					int frames = animateCount.getValue() / (int) animateSlider.getValue();
-					int modSteps = animateCount.getValue() % (int) animateSlider.getValue();
+					timeline.setCycleCount(frames);
 										
 					timeline.getKeyFrames().add(new KeyFrame(Duration.millis(250), new EventHandler<ActionEvent>() {
 						@Override
 						public void handle(ActionEvent arg0) {
 							if (!animateButton.isSelected()) {
-								
+								timeline.stop();
+							}
+							if (animateCount.getValue() < animateSlider.getValue()) {
+								timeline.stop();
+								timeline.getOnFinished().handle(new ActionEvent());
+								return;
 							}
 							for (int steps = 0; steps < (int) animateSlider.getValue(); steps++) {
+								numSteps.set(0, numSteps.get(0) + 1);
+								System.out.println(numSteps.get(0));
 								Critter.worldTimeStep();
 							}
 							Critter.displayWorld(viewPane);
@@ -481,19 +494,52 @@ public class Main extends Application {
 						}
 					}));
 					
-					timeline.setCycleCount(frames);
-					timeline.playFromStart();
-					
-					for (int i = 0; i < modSteps; i++) {
-						Critter.worldTimeStep();
+					timeline.onFinishedProperty().set(new EventHandler<ActionEvent>() {
+						@Override
+						public void handle(ActionEvent arg0) {
+							int modSteps = animateCount.getValue() % (int) animateSlider.getValue();
+
+							if (animateCount.getValue() > modSteps) {
+								timeline.setCycleCount(animateCount.getValue() / (int) animateSlider.getValue());
+								timeline.play();
+							} else {
+								
+								for (int i = 0; i < modSteps; i++) {
+									numSteps.set(0, numSteps.get(0) + 1);
+									System.out.println(numSteps.get(0));
+									Critter.worldTimeStep();
+									animateCount.getValueFactory().setValue(animateCount.getValue() - 1);
+								}
+								Critter.displayWorld(viewPane);
+																
+								numSteps.set(0, 0);
+	//							animateCount.getEditor().setText("0");
+	//							animateValFac.setValue(0);
+															
+								stepButton.setDisable(false);
+								step1Button.setDisable(false);
+								step100Button.setDisable(false);
+								step1000Button.setDisable(false);
+								makeButton.setDisable(false);
+								seedButton.setDisable(false);
+								resetButton.setDisable(false);
+								makeCount.setDisable(false);
+								makeComboBox.setDisable(false);
+								seedCount.setDisable(false);
+								stepCount.setDisable(false);
+								
+								animateButton.setSelected(false);
+							}
+						}
+					});
+										
+					if(timeline.getCycleCount() > 0) {
+						timeline.play();
+					} else {
+						timeline.getOnFinished().handle(new ActionEvent());
 					}
-					Critter.displayWorld(viewPane);
-//					animateButton.setSelected(false);
 
 				} else {
-					animateCount.getEditor().setText("0");
-					animateValFac.setValue(0);
-					
 					timeline.stop();
 					
 					stepButton.setDisable(false);
@@ -503,6 +549,10 @@ public class Main extends Application {
 					makeButton.setDisable(false);
 					seedButton.setDisable(false);
 					resetButton.setDisable(false);
+					makeCount.setDisable(false);
+					makeComboBox.setDisable(false);
+					seedCount.setDisable(false);
+					stepCount.setDisable(false);
 				}
 			}
         });
