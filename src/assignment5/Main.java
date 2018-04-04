@@ -52,6 +52,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
@@ -161,11 +162,12 @@ public class Main extends Application {
     	for (String crit : critterStringList) {
         	checkListMap.put(crit, false);
     	}
-        
+    	
     	ChangeListener<Number> stageSizeListener = new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				Critter.updateGridSize(stage.getWidth() - 265, stage.getHeight() - 105);
+				Critter.updateGridSize(stage.getWidth() - viewPane.getBoundsInParent().getMinX(), stage.getHeight() - viewPane.getBoundsInParent().getMinY());
+				
 				Critter.displayWorld(viewPane);
 			}
     	};

@@ -16,9 +16,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -299,6 +301,7 @@ public abstract class Critter {
 		pane.getChildren().clear();
 		int boundingSize;				// Larger world side
 		double sideLength;				// Side of square in grid
+		
 		if (maxHeight/Params.world_height <= maxWidth/Params.world_width) {
 			boundingSize = Params.world_height;
 			sideLength = maxHeight / (double) boundingSize;
@@ -308,15 +311,13 @@ public abstract class Critter {
 		}
 		for (int row = 0; row < Params.world_height; row++) {
 			for (int col = 0; col < Params.world_width; col++) {
-				Shape square = new Rectangle(sideLength - 0.2, sideLength - 0.2);
+				Shape square = new Rectangle(sideLength, sideLength);
 				square.setFill(null);
 				square.setStroke(Color.BLACK);
 				square.setStrokeWidth(.1);
 				StackPane gridSquare = new StackPane();
 				gridSquare.getChildren().add(square);
 				pane.add(gridSquare, col, row);
-				pane.setHgap(0);
-				pane.setVgap(0);
 			}
 		}
 		for (Critter c : critList) {
@@ -326,7 +327,7 @@ public abstract class Critter {
 			critShape.setFill(c.viewFillColor());
 			critShape.setStroke(c.viewOutlineColor());
 			critShape.setStrokeWidth(.1);
-			StackPane gridSquare = (StackPane) pane.getChildren().get(boundingSize*c.y_coord + c.x_coord);
+			StackPane gridSquare = (StackPane) pane.getChildren().get(Params.world_width*c.y_coord + c.x_coord);
 			gridSquare.getChildren().add(critShape);
 		}
 	} 
