@@ -135,7 +135,8 @@ public class Main extends Application {
         t.setFont(f);
         
         // Creates a list of all Critter files in selected path
-        File assignment5 = new File("C:\\Users\\Jerry Zhang\\eclipse-workspace\\assignment5\\src\\assignment5");
+        File assignment5 = new File("C:\\Users\\Castiel\\eclipse-workspace\\Assignment 3\\assignment5\\src\\assignment5");
+//      File assignment5 = new File("C:\\Users\\Jerry Zhang\\eclipse-workspace\\assignment5\\src\\assignment5");
         String[] classList = assignment5.list();									// List of files in selected path
         ArrayList<Class<?>> critterClassList = new ArrayList<Class<?>>();			// Create new ArrayList to hold Critter classes
         for (String s : classList) {

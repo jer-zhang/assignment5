@@ -83,7 +83,7 @@ public abstract class Critter {
 	 * Checks if a critter is in the target location
 	 * @param direction Integer 0 to 7
 	 * @param isRunning false if walking, true if running
-	 * @return true if location is empty, false otherwise
+	 * @return null if location is empty, string of present critter otherwise
 	 */
 	protected String look(int direction, boolean isRunning) {
 		energy -= Params.look_energy_cost;
@@ -297,56 +297,73 @@ public abstract class Critter {
         }
 	}
 	
+	/**
+	 * GUI View of the world
+	 * @param pane	Pane to update world to
+	 */
 	public static void displayWorld(GridPane pane) {
 		pane.getChildren().clear();
-		int boundingSize;				// Larger world side
-		double sideLength;				// Side of square in grid
+		int boundingSize;								// Larger world side
+		double sideLength;								// Side of square in grid
 		
 		if (maxHeight/Params.world_height <= maxWidth/Params.world_width) {
-			boundingSize = Params.world_height;
-			sideLength = maxHeight / (double) boundingSize;
+			boundingSize = Params.world_height;			// If world_height <= world_width
+			sideLength = maxHeight / (double) boundingSize;	// Set boundingSize and sideLength to height scale
 		} else {
-			boundingSize = Params.world_width;
-			sideLength = maxWidth / (double) boundingSize;
+			boundingSize = Params.world_width;			// If world_height > world_width
+			sideLength = maxWidth / (double) boundingSize;	// Set boundingSize and sideLength to width scale
 		}
+		
+		// Create a square to represent grid, add to gridPane
 		for (int row = 0; row < Params.world_height; row++) {
 			for (int col = 0; col < Params.world_width; col++) {
-				Shape square = new Rectangle(sideLength, sideLength);
-				square.setFill(null);
+				Shape square = new Rectangle(sideLength, sideLength);	// Create square
+				square.setFill(null);									// No fil, small black stroke
 				square.setStroke(Color.BLACK);
 				square.setStrokeWidth(.1);
-				StackPane gridSquare = new StackPane();
-				gridSquare.getChildren().add(square);
-				pane.add(gridSquare, col, row);
+				StackPane gridSquare = new StackPane();					// Create StackPane
+				gridSquare.getChildren().add(square);					// Add square to StackPane
+				pane.add(gridSquare, col, row);							// Add StackPane to specific coord in grid
 			}
 		}
+		
+		// Display shape of each critter on the board
 		for (Critter c : critList) {
-			Shape critShape = findShape(c.viewShape());
+			Shape critShape = findShape(c.viewShape());					// Get shape from critter
 			
-			critShape.getTransforms().add(new Scale((double) sideLength/2, (double) sideLength/2, 0.5, 0.5));
-			critShape.setFill(c.viewFillColor());
+			critShape.getTransforms().add(new Scale((double) sideLength/2, (double) sideLength/2, 0.5, 0.5));	// Scale shape based on board size
+			critShape.setFill(c.viewFillColor());						// Set shape to match critter fill/outline/color
 			critShape.setStroke(c.viewOutlineColor());
 			critShape.setStrokeWidth(.1);
-			StackPane gridSquare = (StackPane) pane.getChildren().get(Params.world_width*c.y_coord + c.x_coord);
-			gridSquare.getChildren().add(critShape);
+			StackPane gridSquare = (StackPane) pane.getChildren().get(Params.world_width*c.y_coord + c.x_coord);	// Get StackPane from grid
+			gridSquare.getChildren().add(critShape);		// Add shape to StackPane
 		}
 	} 
 	
-	
+	/**
+	 * Access function that updates grid size depending on stage size.
+	 * @param width
+	 * @param height
+	 */
 	public static void updateGridSize(double width, double height) {
 		maxWidth = width;
 		maxHeight = height;
 	}
 	
+	/**
+	 * Returns shape object of enum CritterShape
+	 * @param shape Enum Crittershape
+	 * @return Shape object of passed parameter
+	 */
 	public static Shape findShape(CritterShape shape) {
 		Shape s = null;
 		switch(shape) {
-			case CIRCLE:
+			case CIRCLE:				// If CritterShape == Circle, create new Circle
 				s = new Circle(0.5);
 				((Circle) s).setCenterX(0.5);
 				((Circle) s).setCenterY(0.5);
 				break;
-			case SQUARE:
+			case SQUARE:				// If CritterShape == Square, create new Polygon in square shape
 				//s = new Rectangle(1, 1);
 				s = new Polygon();
 				((Polygon) s).getPoints().addAll(new Double[] {
@@ -356,7 +373,7 @@ public abstract class Critter {
 						0.0, 1.0
 				});
 				break;
-			case DIAMOND:
+			case DIAMOND:				// If CritterShape == Diamond, create new Polygon in diamond shape
 				//s = new Rectangle(1/1.414, 1/1.414);
 				s = new Polygon();
 				((Polygon) s).getPoints().addAll(new Double[] {
@@ -366,7 +383,7 @@ public abstract class Critter {
 						0.5, 1.0
 				});
 				break;
-			case STAR:
+			case STAR:					// If CritterShape == Star, create new Polygon in star shape
 				s = new Polygon();
 				((Polygon) s).getPoints().addAll(new Double[] {
 					10.0/21.0, 0.0/21.0,
@@ -382,7 +399,7 @@ public abstract class Critter {
 					10.0/21.0, 0.0/21.0
 				});
 				break;
-			case TRIANGLE:
+			case TRIANGLE:				// If CritterShape == Triangle, create new Polygon in triangle shape
 				s = new Polygon();
 				((Polygon) s).getPoints().addAll(new Double[] {
 					10.0/21.0, 0.0/21.0,
@@ -390,7 +407,7 @@ public abstract class Critter {
 					20.0/21.0, 20.0/21.0
 				});
 				break;
-			default:
+			default:					// If invalid shape, default circle
 				s = new Circle(0.5);
 				break;
 		}
@@ -458,7 +475,7 @@ public abstract class Critter {
 	 */
 	public static String runStats(List<Critter> critters) {
 		// Name, Icon, Number
-		String critString = "" + critters.size();
+		String critString = "" + critters.size();	// Run stats string just prints how many critters on board
 		/*java.util.Map<String, Integer> critter_count = new java.util.HashMap<String, Integer>();
 		
 		String crit_string = null;
@@ -536,7 +553,7 @@ public abstract class Critter {
 	 * Clear the world of all critters, dead and alive
 	 */
 	public static void clearWorld() {
-		critList.clear();
+		critList.clear();				// Clears critlist and babies list
 		babies.clear();
 	}
 	
